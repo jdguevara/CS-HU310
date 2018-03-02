@@ -1,0 +1,69 @@
+a. 
+	public static void runGetClassStudentCountByCode(Connection conn, String code) {
+
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		// Attempt to run the stored procedure in the database
+		try {
+			stmt = conn.prepareStatement("call GetClassStudentCountByCode(?)");
+			stmt.setString(1, code);
+			rs = stmt.executeQuery();
+
+			// Print out the result
+			rs.beforeFirst();
+			while (rs.next()) {
+				System.out.println("Number of students in " + code + " is: " + rs.getInt(1));
+			}
+		} catch (SQLException ex) {
+			// handle errors
+			System.err.println("SQLException: " + ex.getMessage());
+			System.err.println("SQLState: " + ex.getSQLState());
+			System.err.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			// Release resources in reverse order of creation
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException sqlEx) {
+				} //ignore
+				rs = null;
+			}
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException sqlEx) {
+				} //ignore
+				stmt = null;
+			}
+		}
+	}
+
+b.
+	if (args[0].equals("GetClassStudentsByCode")) {
+		System.out.println("Running GetClassStudentByCode");
+		runGetClassStudentsByCode(conn, args[4]);    
+	} else {
+		System.out.println("Running GetClassStudentCountByCode");
+		runGetClassStudentCountByCode(conn, args[4]);
+	}
+
+c.
+	System.out.println ("Usage :   GetClassStudentCountByCode port dbname password code");
+
+d.
+	 driver loaded
+
+	 GetClassStudentCountByCode
+	 5739
+	 CS
+	 **
+	 CS310
+	 Database CS connection succeeded!
+
+	 Running GetClassStudentCountByCode
+	 Number of students in CS310 is: 1
+
+	 Database CS connection closed
+
+

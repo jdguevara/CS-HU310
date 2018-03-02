@@ -1,0 +1,86 @@
+Jaime Guevara
+February 19, 2018
+Part 2: Items 4-5 (Due: 2/23/18)
+
+	4. Create Procedures to put data into each table
+
+	-- Procedure for creating an item --
+	delimiter //
+
+	create procedure CreateItem (paramCode varchar(5), paramDescription varchar(50), paramPrice decimal(4,2))
+	begin
+		insert into Item(ItemCode, ItemDescription, Price)
+	    values (paramCode, paramDescription, paramPrice);
+	end //
+
+	delimiter ;
+
+	-- Procedure for creating a shipment --
+	delimiter //
+
+	create procedure CreateShipment (paramShipDate datetime, paramCode varchar(5), paramQuantity int)
+	begin    
+		set @itemID := (select ID from Item where ItemCode = paramCode);
+		insert into Shipment(ShipmentDate, ItemID, Quantity)
+		values (paramShipDate, @itemID, paramQuantity);
+	end //
+
+	delimiter ;
+
+	-- Procedure for creating a purchase --
+	delimiter //
+
+	create procedure CreatePurchase (paramCode varchar(5), paramQuantity int, paramPurchaseDate datetime)
+	begin
+		insert into Purchase (ItemID, Quantity, PurchaseDate)
+	    values ((select ID from Item where ItemCode = paramCode), paramQuantity, paramPurchaseDate);
+	end //
+
+	delimiter ;
+
+	-- Tests for procedure success --
+	Call CreateItem ('Candy','All Candy Same Price', 4.50);
+	Call CreateShipment(Now(),'Candy',5);
+	Call CreatePurchase('Candy', 1,Now());
+
+	5. Create read procedures to show data from tables
+
+	-- Procedure for getting an item based on code --
+	delimiter //
+
+	create procedure GetItems (paramCode varchar(5))
+	begin
+		select * from Item where ItemCode like paramCode;
+	end //
+
+	delimiter ;
+
+	-- Procedure for getting shipment records based on date made--
+	delimiter //
+
+	create procedure GetShipments (thisDate date)
+	begin
+		select * from Shipment where cast(ShipmentDate as date) = thisDate;
+	end //
+
+	delimiter ;
+
+	-- Procedure for getting purchase records based on date made --
+	delimiter //
+
+	create procedure GetPurchases (thisDate date)
+	begin
+		select * from Purchase where cast(PurchaseDate as date) = thisDate;
+	end //
+
+	delimiter ;
+
+	-- Tests for reading procedure success --
+	Call GetItems ('%');     -- returns all Items
+	Call GetItems ('d');     -- returns no Items
+	Call GetItems ('Drink'); -- returns 1 Item
+	Call GetItems ('Candy'); -- extra test --
+	Call GetShipments("2018-02-19");
+	Call GetPurchases("2018-02-19");
+	Call GetShipments("2018-02-11"); -- extra test based on my db data --
+	Call GetPurchases("2018-02-11"); -- extra test based on my db data --
