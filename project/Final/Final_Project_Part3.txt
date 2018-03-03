@@ -85,3 +85,55 @@ Part 3: Items 6-8 (Due: 3/02/18)
 	call UpdatePurchase ('Drink', 1, "2018-02-11"); -- These last two should update them to their original quantities
 	call UpdatePurchase ('Candy', 1, "2018-02-19");
 	call UpdatePurchase ('Candy', 5); -- Test for the correct number of parameters
+
+	-- 8. Delete Procedures --
+
+	-- Deleting a Shipment --
+	delimiter //
+
+	create procedure DeleteShipment (pShipmentDate date, pCode varchar(5))
+	begin
+		delete from Shipment
+	    where cast(ShipmentDate as date) = pShipmentDate and ItemID = (select ID from Item where ItemCode = pCode);
+	end //
+
+	delimiter ;
+	
+	-- Test DeleteShipment --
+	call DeleteShipment(cast(now() as date), 'Chips');
+	insert into Shipment(ShipmentDate, ItemID, Quantity) values (now(), 3, 0);
+	call DeleteShipment(cast(now() as date), 'Chips');
+
+	-- Deleting an Item --
+	delimiter //
+
+	create procedure DeleteItem (pCode varchar(5))
+	begin
+		delete from Item
+	    where ItemCode = pCode;
+	end //
+	
+	delimiter ;
+
+	-- Tests for DeleteItem --
+	call DeleteItem('Chips'); -- Won't be able to do this at the moment as it is tied to Shipment and Purchase through their FKs
+
+	-- Deleting a Purchase --
+	delimiter //
+	
+	create procedure DeletePurchase (pPurchaseDate date, pCode varchar(5))
+	begin
+		delete from Purchase
+	    where cast(PurchaseDate as date) = pPurchaseDate and ItemID = (select ID from Item where ItemCode = pCode);
+	end //
+	
+	delimiter ;
+	
+	-- Test DeletePurchase --
+	call DeletePurchase(cast(now() as date), 'Chips');
+	Insert into Purchase (ItemID,Quantity, PurchaseDate) Values (3, 0, Now());
+	call DeletePurchase(cast(now() as date), 'Chips');
+	
+	-- Try the previous DeleteItem test again --
+	call DeleteItem('Chips'); -- Should now work that both the Shipment and Purchase tied to it have been deleted, freing it up from their FKs
+				
