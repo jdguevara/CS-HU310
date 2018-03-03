@@ -1,0 +1,25 @@
+Jaime Guevara
+March 2, 2018
+Part 3: Items 6-8 (Due: 3/02/18)
+
+	-- 6. Procedure for reporting available quantities for a given item --
+	delimiter //
+
+	create procedure ItemsAvailable (pCode varchar(5)) 
+	begin
+		select ItemCode as 'Code', ItemDescription as 'Description', sum(Shipment.Quantity)-sum(Purchase.Quantity) as 'Available Quantity'
+		from Item
+ 	    inner join Shipment
+			on Shipment.ItemID = Item.ID
+		inner join Purchase
+			on Purchase.ItemID = Item.ID
+		where ItemCode like pCode
+		group by ItemCode, ItemDescription;
+	end //
+
+	delimiter ;
+
+	-- Test for reporting procedure --
+	Call ItemsAvailable('Drink');  -- returns one record , no duplicates exist
+	call ItemsAvailable('%'); -- returns all quantity records for the available items
+	call ItemsAvailable('Candy'); -- Extra test
