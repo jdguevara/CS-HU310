@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 // export CLASSPATH=/opt/mysql/mysql-connector-java-5.1.45-bin.jar:$CLASSPATH
 
 // don’t forget that you need Procedures in your database 
+// 
+// @author Jaime Guevara, CS-HU310 instructor(s)
 class project {
     public static Connection makeConnection(String port, String database, String password) {
         try {
@@ -39,12 +41,13 @@ class project {
             stmt.setString(1, code);
             rs = stmt.executeQuery();
             // Now do something with the ResultSet ....
-            
+           
             rs.beforeFirst();
             while (rs.next()) {
                 System.out.println(rs.getInt(1) 
                         + ":" + rs.getString(2) 
-                        + ":" + rs.getString(3) 
+                        + ":" + rs.getString(3)
+						+ ":" + rs.getString(4)
                         );
             }
         } catch (SQLException ex) {
@@ -84,9 +87,9 @@ class project {
             
             rs.beforeFirst();
             while (rs.next()) {
-                System.out.println(rs.getInt(1) 
+                System.out.println(rs.getString(1) 
                         + ":" + rs.getString(2) 
-                        + ":" + rs.getString(3) 
+                        + ":" + rs.getInt(3) 
                         );
             }
         } catch (SQLException ex) {
@@ -129,8 +132,7 @@ class project {
                 System.out.println(rs.getInt(1) 
                         + ":" + rs.getString(2) 
                         + ":" + rs.getString(3) 
-                        + ":" + rs.getString(4)
-                        + ":" + rs.getString(5));
+                        + ":" + rs.getString(4));
             }
         } catch (SQLException ex) {
             // handle any errors
@@ -164,17 +166,23 @@ class project {
             System.out.println();
             System.out.println("JDBC driver loaded");
             System.out.println();
-            if (args[0] == "/?" || (args.length < 1)){
+            if (args.length == 0){
               System.out.println ("Usage :   GetItems code");
               System.out.println ("Usage :   ItemsAvailable code");
               System.out.println ("Usage :   test");
               return;
-            }
-            else {
+            } else if (args[0].equals("/?")){
+              System.out.println ("Usage :   GetItems code");
+              System.out.println ("Usage :   ItemsAvailable code");
+              System.out.println ("Usage :   test");
+              return;
+			} else {
                 System.out.println(args[0]);
-                System.out.println(args[1]);
-
             }
+
+			if (args.length == 2) {
+				System.out.println(args[1]);
+			}
 
             Connection conn = makeConnection("5739", "cs310project","SolidDonut_93");
 
