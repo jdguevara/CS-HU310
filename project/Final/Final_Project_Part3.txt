@@ -23,3 +23,65 @@ Part 3: Items 6-8 (Due: 3/02/18)
 	Call ItemsAvailable('Drink');  -- returns one record , no duplicates exist
 	call ItemsAvailable('%'); -- returns all quantity records for the available items
 	call ItemsAvailable('Candy'); -- Extra test
+
+	-- New Test for an item with no shipment/purchase --
+	insert into Item(ItemCode, ItemDescription, Price) values ('Chips', 'All the Chips', 5.00);
+	insert into Shipment(ShipmentDate, ItemID, Quantity) values (now(), 3, 0);
+	Insert into Purchase (ItemID,Quantity, PurchaseDate) Values (3, 0, Now());
+	call ItemsAvailable('Chips');
+
+	-- 7. Update Procedures --
+
+	-- Update Shipments --
+	delimiter //
+
+	create procedure UpdateShipment (pShipmentDate date, pItemCode varchar(5), pQuantity int)
+	begin
+		update Shipment
+		set Quantity = pQuantity
+		where Shipment.ItemID = (select ID from Item where ItemCode = pItemCode) and cast(Shipment.ShipmentDate as date) = pShipmentDate;
+	end //
+
+	delimiter ;
+
+	-- Tests for UpdateShipment --
+	call UpdateShipment ("2018-02-11", 'Drink', 5); -- These first two will change up the values currently existing
+	call UpdateShipment ("2018-02-19", 'Candy', 1);
+	call UpdateShipment ("2018-02-11", 'Drink', 1); -- These last two should update them to their original quantities
+	call UpdateShipment ("2018-02-19", 'Candy', 5);
+	call UpdateShipment ('Candy', 5); -- Test for the correct number of parameters
+
+	-- Update Items --
+	delimiter //
+
+	create procedure UpdateItem (pItemCode varchar(5), pDescription varchar(50), pPrice decimal(4,2))
+	begin
+		update Item
+		set ItemDescription = pDescription, Price = pPrice
+		where ItemCode = pItemCode;
+	end //
+
+	delimiter ;
+
+	-- Tests for UpdateItem --
+	call UpdateItem('Candy', 'New candy', 5.50);
+	call UpdateItem('Candy', 'All candy same price', 4.50);
+
+	-- Update Purchases --
+	delimiter //
+
+	create procedure UpdatePurchase (pItemCode varchar(5), pQuantity int, pPurchaseDate date)
+	begin
+		update Purchase
+	    set Quantity = pQuantity
+	    where Purchase.ItemID = (select ID from Item where ItemCode = pItemCode) and cast(Purchase.PurchaseDate as date) = pPurchaseDate;
+	end //
+
+	delimiter ;
+
+	-- Tests for UpdatePurchase --
+	call UpdatePurchase ('Drink', 5, "2018-02-11"); -- These first two will change up the values currently existing
+	call UpdatePurchase ('Candy', 5, "2018-02-19");
+	call UpdatePurchase ('Drink', 1, "2018-02-11"); -- These last two should update them to their original quantities
+	call UpdatePurchase ('Candy', 1, "2018-02-19");
+	call UpdatePurchase ('Candy', 5); -- Test for the correct number of parameters

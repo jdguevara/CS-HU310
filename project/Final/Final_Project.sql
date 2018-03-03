@@ -70,7 +70,7 @@ Insert into Shipment(ShipmentDate,ItemID,Quantity) Values (Now(),1, 1);
 Insert into Shipment(ShipmentDate,ItemID,Quantity) Values (Now(),1,1);
 Select * from Shipment;
 
--- Procedure for creating an item --
+-- 4. Procedure for creating an item --
 delimiter //
 
 create procedure CreateItem (paramCode varchar(5), paramDescription varchar(50), paramPrice decimal(4,2))
@@ -109,7 +109,7 @@ Call CreateItem ('Candy','All Candy Same Price', 4.50);
 Call CreateShipment(Now(),'Candy',5);
 Call CreatePurchase('Candy', 1,Now());
 
--- Procedure for getting an item based on code --
+-- 5. Procedure for getting an item based on code --
 delimiter //
 
 create procedure GetItems (paramCode varchar(5))
@@ -148,3 +148,89 @@ Call GetShipments("2018-02-19");
 Call GetPurchases("2018-02-19");
 Call GetShipments("2018-02-11"); -- extra test based on my db data --
 Call GetPurchases("2018-02-11"); -- extra test based on my db data --
+
+-- 6. Procedure for reporting available quantities for a given item --
+delimiter //
+
+create procedure ItemsAvailable (pCode varchar(5)) 
+begin
+	select ItemCode as 'Code', ItemDescription as 'Description', ifnull(sum(Shipment.Quantity)-sum(Purchase.Quantity), 0) as 'Available Quantity'
+    from Item
+    inner join Shipment
+		on Shipment.ItemID = Item.ID
+	inner join Purchase
+		on Purchase.ItemID = Item.ID
+    where ItemCode like pCode
+    group by ItemCode, ItemDescription;
+end //
+
+delimiter ;
+
+-- Test for reporting procedure --
+Call ItemsAvailable('Drink');  -- returns one record , no duplicates exist
+call ItemsAvailable('%'); -- returns all quantity records for the available items
+call ItemsAvailable('Candy'); -- Extra test
+call ItemsAvailable('Ice'); -- Test for items that doesn't exist should not return anything
+
+-- New Test for an item with no shipment/purchase --
+insert into Item(ItemCode, ItemDescription, Price) values ('Chips', 'All the Chips', 5.00); 
+insert into Shipment(ShipmentDate, ItemID, Quantity) values (now(), 3, 0);
+Insert into Purchase (ItemID,Quantity, PurchaseDate) Values (3, 0, Now());
+call ItemsAvailable('Chips');
+
+-- 7. Update Procedures --
+
+-- Update Shipments --
+delimiter //
+
+create procedure UpdateShipment (pShipmentDate date, pItemCode varchar(5), pQuantity int)
+begin
+	update Shipment
+    set Quantity = pQuantity
+    where Shipment.ItemID = (select ID from Item where ItemCode = pItemCode) and cast(Shipment.ShipmentDate as date) = pShipmentDate;
+end //
+
+delimiter ;
+
+-- Tests for UpdateShipment -- 
+call UpdateShipment ("2018-02-11", 'Drink', 5); -- These first two will change up the values currently existing
+call UpdateShipment ("2018-02-19", 'Candy', 1);
+call UpdateShipment ("2018-02-11", 'Drink', 1); -- These last two should update them to their original quantities
+call UpdateShipment ("2018-02-19", 'Candy', 5);
+call UpdateShipment ('Candy', 5); -- Test for the correct number of parameters
+
+-- Update Items --
+delimiter //
+
+create procedure UpdateItem (pItemCode varchar(5), pDescription varchar(50), pPrice decimal(4,2))
+begin
+	update Item
+    set ItemDescription = pDescription, Price = pPrice
+    where ItemCode = pItemCode;
+end //
+
+delimiter ;
+
+-- Tests for UpdateItem -- 
+call UpdateItem('Candy', 'New candy', 5.50);
+call UpdateItem('Candy', 'All candy same price', 4.50);
+
+-- Update Purchases --
+delimiter //
+
+create procedure UpdatePurchase (pItemCode varchar(5), pQuantity int, pPurchaseDate date)
+begin
+	update Purchase
+    set Quantity = pQuantity
+    where Purchase.ItemID = (select ID from Item where ItemCode = pItemCode) and cast(Purchase.PurchaseDate as date) = pPurchaseDate;
+end //
+
+delimiter ;
+
+-- Tests for UpdatePurchase -- 
+call UpdatePurchase ('Drink', 5, "2018-02-11"); -- These first two will change up the values currently existing
+call UpdatePurchase ('Candy', 5, "2018-02-19");
+call UpdatePurchase ('Drink', 1, "2018-02-11"); -- These last two should update them to their original quantities
+call UpdatePurchase ('Candy', 1, "2018-02-19");
+call UpdatePurchase ('Candy', 5); -- Test for the correct number of parameters
+
