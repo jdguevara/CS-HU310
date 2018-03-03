@@ -121,7 +121,7 @@ class project {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Student Limit 1;");
+            rs = stmt.executeQuery("SELECT * FROM Item Limit 1;");
             // Now do something with the ResultSet ....
             
             rs.beforeFirst();
@@ -164,34 +164,28 @@ class project {
             System.out.println();
             System.out.println("JDBC driver loaded");
             System.out.println();
-            if (args[0] == "/?" || (args.length < 4)){
-              System.out.println ("Usage :   GetItems port dbname password code");
-              System.out.println ("Usage :   ItemsAvailable port dbname password code");
-              System.out.println ("Usage :   test    port dbname password");
+            if (args[0] == "/?" || (args.length < 1)){
+              System.out.println ("Usage :   GetItems code");
+              System.out.println ("Usage :   ItemsAvailable code");
+              System.out.println ("Usage :   test");
               return;
             }
             else {
                 System.out.println(args[0]);
                 System.out.println(args[1]);
-                System.out.println(args[2]);
-                System.out.println("**");
 
-                if (args.length == 5)
-                {
-                    System.out.println(args[4]);
-                }
             }
 
-            Connection conn = makeConnection(args[1], args[2],args[3]);
+            Connection conn = makeConnection("5739", "cs310project","SolidDonut_93");
 
             if (args[0].equals("GetItems"))
             {
                  System.out.println("Running GetItems");
-                runGetItems(conn, args[4]);    
+                runGetItems(conn, args[1]);    
             }
             else if (args[0].equals( "ItemsAvailable") ){
                 System.out.println("Running ItemsAvailable");
-                runItemsAvailable(conn, args[4]);
+                runItemsAvailable(conn, args[1]);
             }
             else if (args[0].equals( "test") ){
                  System.out.println("Running test");
@@ -202,7 +196,7 @@ class project {
             }
             conn.close();
             System.out.println();
-            System.out.println("Database " +  args [2] + " connection closed");
+            System.out.println("Database cs310project connection closed");
             System.out.println();
         } catch (Exception ex) {
             // handle the error
