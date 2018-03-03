@@ -200,7 +200,7 @@ class project {
                 runQuery(conn);
             }
             else {
-                System.out.println("No proces requested");
+                System.out.println("No process requested");
             }
             conn.close();
             System.out.println();
